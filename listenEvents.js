@@ -1,6 +1,8 @@
-const conf = require('./config/config.js');
 const axios = require('axios')
 const Web3 = require('web3');
+
+const conf = require('./config/config.js');
+const manage = require('./service/manageService')
 
 let debug = true
 if (process.env.NODE_ENV == 'pro') {
@@ -37,17 +39,24 @@ setInterval(() => web3.eth.getBlockNumber()
 
 function listenPlaceBet() {
   console.log('start listening place bet transaction')
-  // topics: ['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', null, null],
  
   web3.eth.subscribe('logs', {
     address: conf.casinoContract._address,
-    topics: ['sha3 of placeBet'],
+    topics: ['0xca8973a7d00c5301c999a74e4b27b70ea2391f4575d08e0bf037c435ebd753c0'],
   }, function(error, result) {
     if (error) {
       console.error(new Date().toLocateString(), ' listen place bet transaction error: ' + JSON.stringify(error));
     } else {
       console.log('listen place bet data[' + new Date().toLocaleString() + ']:', result.transactionHash)
-      const txhash = result.transactionHash
+      console.log(result)
+      const commit = 'test'
+      manage.closeBet(commit, function(err, hash) {
+        console.log(err, hash)
+      }).catch(error => {
+        console.log('close bet error occur: ', error)
+      })
     }
   })
 }
+
+listenPlaceBet()
