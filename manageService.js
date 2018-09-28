@@ -28,17 +28,17 @@ async function getNonce(from) {
 }
 
 async function closeBet(commit, callback) {
+  const reveal = await getAsync(commit)
   const pk = config.pk
   const from = config.address
   const gasPrice = await web3.eth.getGasPrice()
   const nonce = await getNonce(from)
-  console.log('nonce is ', nonce)
   if (nonce < 0 || (nonce != 0 && !nonce)) {
     console.log('nonce too small', nonce)
     return
   }
   var privateKey = new Buffer(pk, 'hex')
-  var data = config.casinoContract.methods.closeBet(commit).encodeABI()
+  var data = config.casinoContract.methods.closeBet(reveal).encodeABI()
 
   var rawTx = {
     nonce: web3.utils.toHex(nonce),
@@ -58,7 +58,7 @@ async function closeBet(commit, callback) {
 }
 
 syncNonce(config.address)
-
+//closeBet(0, console.log)
 module.exports = {
     closeBet: closeBet 
 }
