@@ -38,11 +38,12 @@ router.get("/random", function (req, res, next) {
 })
 
 function getSignature(expiredBlockNumber, commit, pk) {
+  pk = '0x' + pk
   const msgHash = web3.utils.soliditySha3(expiredBlockNumber, commit)
   const signature = Account.sign(msgHash, pk)
   const r = signature.slice(0, 66)
   const s = '0x' + signature.slice(66, 130)
-  const v = signature.slice(130, 132)
+  const v = '0x' + signature.slice(130, 132)
   return [signature, v, r, s]
 }
 
