@@ -1,8 +1,9 @@
 const axios = require('axios')
 const Web3 = require('web3');
 
+const redisPool = require("./redis_pool");
 const conf = require('./config/config.js');
-const manage = require('./service/manageService')
+const manage = require('./manageService')
 
 let debug = true
 if (process.env.NODE_ENV == 'pro') {
@@ -48,10 +49,11 @@ function listenPlaceBet() {
       console.error(new Date().toLocateString(), ' listen place bet transaction error: ' + JSON.stringify(error));
     } else {
       console.log('listen place bet data[' + new Date().toLocaleString() + ']:', result.transactionHash)
-      console.log(result)
-      const commit = 'test'
+      const data = result.data
+      const commit = '0x' + data.slice(130,194)
       manage.closeBet(commit, function(err, hash) {
         console.log(err, hash)
+        redisPool.del(commit)
       }).catch(error => {
         console.log('close bet error occur: ', error)
       })
