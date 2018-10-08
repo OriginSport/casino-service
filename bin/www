@@ -5,6 +5,7 @@
  */
 
 var app = require('../app');
+var data = require('../initRedis');
 var debug = require('debug')('casino-service:server');
 var http = require('http');
 
@@ -31,6 +32,7 @@ app.set('io', io)
 io.on('connection', function(socket) {
   console.log(new Date().toLocaleString(), ' someone connected')
   socket.emit('greet', 'Welcome to OriginBet')
+  socket.emit('dataUpdate', JSON.stringify(data))
 })
 
 server.on('error', onError);
