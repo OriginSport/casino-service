@@ -1,8 +1,8 @@
 const express = require('express')
 const router = express.Router()
-const Account = require("eth-lib/lib/account")
+const Account = require('eth-lib/lib/account')
 const conf = require('../config/config.js')
-const redisPool = require("../redis_pool");
+const redisPool = require('../redis_pool')
 const web3 = conf.getWeb3();
 
 // router.get("/saveSecret", function (req, res, next) {
@@ -14,13 +14,52 @@ const web3 = conf.getWeb3();
 //     redisPool.set(commit, reveal)
 //     res.json(success)
 // })
+//
 
-router.get("/random", function (req, res, next) {
+const events = {
+  betClosed: 'betClosed', //send bet result
+  casinoDataUpdate: 'casinoDataUpdate', //send total amount of casino game, daily amount, last jackpot, daily top winners
+  sportAmount: 'sportAmount', //send total amount sport betting
+}
+
+router.get('/betClosed', function(req, res, next) {
+    if (!req.ip || req.ip.slice(7, req.ip.length) != conf.inetAddr) {
+      const fail = conf.requestFaild()
+      res.json(fail)
+    }
+    let success = conf.requestSuccess()
+    const commit = req.query.commit
+    const result = req.query.result
+    const io = req.app.get('io')
+    obj = {commit: commit, result: result}
+    io.emit('betClosed', JSON.stringify(obj))
+    res.json(success)
+})
+
+router.get('/betPlaced', function(req, res, next) {
+    let success = conf.requestSuccess()
+    const value = req.query.value
+    const io = req.app.get('io')
+    obj = {commit: commit, result: result}
+    io.emit('daily', JSON.stringify(obj))
+    res.json(success)
+})
+
+router.get('/sportBetPlaced', function(req, res, next) {
+    let success = conf.requestSuccess()
+    const value = req.query.value
+    const io = req.app.get('io')
+    obj = { data: value }
+    io.emit('sportAmount', JSON.stringify(obj))
+    res.json(success)
+})
+
+router.get('/random', function(req, res, next) {
     let success = conf.requestSuccess()
     let fail = conf.requestFaild()
     const networkId = req.query.networkId
     const address = req.query.address
-		const reveal = String(Math.random()).slice(2,18)
+    const reveal = web3.utils.randomHex(32)
     const commit = web3.utils.soliditySha3(reveal)
     redisPool.set(commit, reveal)
     const expiredBlockNumber = 8000000
