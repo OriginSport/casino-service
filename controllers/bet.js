@@ -61,7 +61,7 @@ router.get('/random', function(req, res, next) {
     const address = req.query.address
     const reveal = web3.utils.randomHex(32)
     const commit = web3.utils.soliditySha3(reveal)
-    redisPool.set(commit, reveal)
+    redisPool.setex(commit, 3750, reveal)
     const expiredBlockNumber = 8000000
     signData = getSignature(expiredBlockNumber, commit, conf.pk)
     data = {}
