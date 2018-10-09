@@ -3,6 +3,7 @@ const router = express.Router()
 const Account = require('eth-lib/lib/account')
 const conf = require('../config/config.js')
 const redisPool = require('../redis_pool')
+const redisUtils = require('../redisUtils')
 const web3 = conf.getWeb3();
 
 // router.get("/saveSecret", function (req, res, next) {
@@ -30,9 +31,19 @@ router.get('/betClosed', function(req, res, next) {
     let success = conf.requestSuccess()
     const commit = req.query.commit
     const result = req.query.result
+    const modulo = req.query.modulo
     const io = req.app.get('io')
-    obj = {commit: commit, result: result}
+    obj = {commit: commit, result: result, modulo: modulo}
     io.emit('betClosed', JSON.stringify(obj))
+    res.json(success)
+})
+
+router.get('/dataUpdate', function(req, res, next) {
+    let success = conf.requestSuccess()
+    const io = req.app.get('io')
+    redisUtils.getData().then(data => {
+      io.emit('dataUpdate', JSON.stringify(data))
+    })
     res.json(success)
 })
 
