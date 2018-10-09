@@ -1,9 +1,9 @@
 const web3 = require('web3')
 const BigNumber = require('bignumber.js')
 
-function getResult(reveal, blockHash, module) {
+function getResult(reveal, blockHash, modulo) {
   const random = new BigNumber(web3.utils.soliditySha3(reveal, blockHash))
-  const result = random.modulo(module)
+  const result = random.modulo(modulo)
   return result.toNumber()
 }
 
