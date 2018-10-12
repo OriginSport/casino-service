@@ -90,7 +90,8 @@ async function getData() {
 
 //incr('sportAmount', '1160000000000000000')
 
-placeBetUpdate('60000000000000000', 2)
+//placeBetUpdate('60000000000000000', 2)
+updateLastWinner('0x7525c82e0cf1832e79ff3aff259c5fe853cf95f4', 1188000000000000000)
 getData().then(data => {
   console.log(data)
 })
@@ -98,5 +99,6 @@ getData().then(data => {
 module.exports = {
   getData: getData,
   incr: incr,
-  placeBetUpdate: placeBetUpdate
+  placeBetUpdate: placeBetUpdate,
+  updateLastWinner: updateLastWinner
 }
