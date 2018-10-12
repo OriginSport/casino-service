@@ -5,7 +5,7 @@
  */
 
 var app = require('../app');
-var data = require('../initRedis');
+var redisUtils = require('../redisUtils')
 var debug = require('debug')('casino-service:server');
 var http = require('http');
 
@@ -30,13 +30,24 @@ server.listen(port);
 var io = require('socket.io')(server)
 app.set('io', io)
 io.on('connection', function(socket) {
-  console.log(new Date().toLocaleString(), ' someone connected')
+  const address = socket.handshake.query.address
+  const id = socket.handshake.query.sid
+  console.log(new Date().toLocaleString(), id, address, ' has connected')
   socket.emit('greet', 'Welcome to OriginBet')
-  socket.emit('dataUpdate', JSON.stringify(data))
+  socket.on('fetchData', function(msg) {
+    redisUtils.getData().then(data => {
+      socket.emit('dataUpdate', JSON.stringify(data))
+      })
+  })
+  socket.on('disconnect', function(){
+    console.log(new Date().toLocaleString(), id, address, ' has disconnected')
+  })
 })
 
 server.on('error', onError);
 server.on('listening', onListening);
+
+exports.io = io
 
 /**
  * Normalize a port into a number, string, or false.
