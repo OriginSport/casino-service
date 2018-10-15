@@ -68,6 +68,7 @@ function listenPlaceBet() {
       console.log('listen place bet data[' + new Date().toLocaleString() + ']:', result.transactionHash)
       const data = result.data
       const modulo = parseInt(result.topics[2])
+      const choice = parseInt(data.slice(0, 66))
       const value = parseInt('0x' + data.slice(66, 130))
       const commit = '0x' + data.slice(130,194)
       const blockHash = result.blockHash
@@ -95,7 +96,8 @@ function listenPlaceBet() {
               redisPool.del(commit)
 
               const commitRevealUrl = 'http://' + conf.inetAddr + ':' + conf.inetPort +  '/v1/api/betClosed?commit=' + commit + '&result=' + result + '&modulo=' + modulo
-              pushUpdate(commitRevealUrl, 'commit-reveal', modulo, result)
+              pushUpdate(commitRevealUrl, 'commit-reveal')
+              console.log(modulo, choice, result)
             })
           }).catch(error => {
             console.log('[' + new Date().toLocaleString() + ']:' + 'close bet error occur: ', error)
@@ -111,10 +113,10 @@ function listenPlaceBet() {
   })
 }
 
-function pushUpdate(url, logText, arg1, arg2) {
+function pushUpdate(url, logText) {
   axios.get(url)
     .then(function (response) {
-      console.log('push ' + logText + ' to client', arg1, arg2);
+      console.log('push ' + logText + ' to client');
     })
     .catch(function (error) {
       console.log(logText + '[' + new Date().toLocaleString() + ']:', error);
