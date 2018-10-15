@@ -8,11 +8,6 @@ const manage = require('./manageService')
 const utils = require('./utils')
 const redlock = require('./redlock')
 
-let debug = true
-if (process.env.NODE_ENV == 'pro') {
-  debug = false
-}
-
 const getProvider = () => {
     const provider = new Web3.providers.WebsocketProvider(conf.geth_ws_url)
     provider.on('connect', () => console.log(new Date().toLocaleString(), ' WebSocket -------start--------'))
