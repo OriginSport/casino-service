@@ -14,10 +14,12 @@ const getProvider = () => {
     provider.on('error', e => {
       console.error(new Date().toLocaleString(), ' WS Error: ', e)
       web3.setProvider(getProvider())
+      startListen()
     })
     provider.on('end', e => {
       console.error(new Date().toLocaleString(), ' WS End: ', e)
       web3.setProvider(getProvider())
+      startListen()
     })
 
     return provider
@@ -30,7 +32,8 @@ setInterval(() => web3.eth.getBlockNumber()
     }).catch(err => {
       console.log(new Date() + ' set interval error: ', err)
       web3.setProvider(getProvider())
-    }), 1000*5*60)
+      startListen()
+    }), 1000*30*60)
 
 function listenbetClosed() {
   console.log('start listening close bet transaction')
