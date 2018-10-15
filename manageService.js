@@ -10,7 +10,7 @@ const web3 = conf.getWeb3();
 async function syncNonce(from) {
   const key = 'NONCE:' + conf.debug + ':' + from
   const nonce = await web3.eth.getTransactionCount(from)
-  console.log(nonce)
+  console.log('syncing nonce: ', nonce)
   redisPool.set(key, nonce, 'EX', 3600*24)
 }
 
