@@ -1,14 +1,10 @@
 var redis = require("redis")
-var redisPool = redis.createClient()
+const conf = require('./config/config.js')
 
-//redisPool.set('test', 'xixi', function (err,reply) {
-//    if(!err){
-//        console.log(reply);
-//    }
-//
-//    redisPool.get('test', function (err, reply1) {
-//        console.log(reply1); // 'foobar'
-//    });
-//});
+var redisPool = redis.createClient({db: conf.redisDBNumber})
+
+redisPool.get('sportAmount', function(err, data) {
+  console.log(err, data)
+})
 
 module.exports = redisPool
