@@ -1,5 +1,6 @@
-var redisPool = require("./redis_pool");
-var config = require('./config/config');
+var redisPool = require("./redis_pool")
+const config = require('./config/config')
+
 var Tx = require('ethereumjs-tx')
 const {promisify} = require('util');
 const getAsync = promisify(redisPool.get).bind(redisPool);
@@ -32,10 +33,12 @@ async function closeBet(commit, callback) {
   const pk = config.pk
   const from = config.address
   const gasPrice = await web3.eth.getGasPrice()
-  const nonce = await getNonce(from)
-  if (nonce < 0 || (nonce != 0 && !nonce)) {
-    console.log('nonce too small', nonce)
-    return
+  let nonce = await getNonce(from)
+  const nonceOnline = await web3.eth.getTransactionCount(from)
+
+  if (nonce < 0 || (nonce != 0 && !nonce) || nonce < nonceOnline) {
+    console.log('redis nonce is not correct, sync nonce online')
+    nonce = nonceOnline
   }
   var privateKey = new Buffer(pk, 'hex')
   var data = config.casinoContract.methods.closeBet(reveal).encodeABI()
@@ -58,7 +61,8 @@ async function closeBet(commit, callback) {
 }
 
 syncNonce(config.address)
-//closeBet(0, console.log)
+//closeBet('0x36c3b7aa855b06e4c0d38c31b88edb823ca0af6dcc555cc208404e11877653c8', console.log)
+//closeBet('0x' + 'bfbca8ab55b013bea34cb7ed0436b4069d90b00d271eee0d6b627514e0c117df', console.log)
 module.exports = {
     closeBet: closeBet 
 }
