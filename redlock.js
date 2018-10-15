@@ -1,6 +1,6 @@
 const redis = require("redis")
 const Redlock = require('redlock')
-const redisPool = require('./redis_pool')
+const redisPool = require('./redisPool')
 
 const redlock = new Redlock(
   // you should have one client for each independent redis node

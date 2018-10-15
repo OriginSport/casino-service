@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const Account = require('eth-lib/lib/account')
 const conf = require('../config/config.js')
-const redisPool = require('../redis_pool')
+const redisPool = require('../redisPool')
 const redisUtils = require('../redisUtils')
 const web3 = conf.getWeb3();
 

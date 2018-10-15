@@ -1,6 +1,6 @@
 const {web3, property, sendSignedTxHelper} = require('./contractUtil.js')
 const {getEvents} = require('./eventUtil')
-const redisPool = require("../redis_pool")
+const redisPool = require("../redisPool")
 const {promisify} = require('util')
 const getAsync = promisify(redisPool.get).bind(redisPool)
 
