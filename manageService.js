@@ -28,16 +28,14 @@ async function getNonce(from) {
   return -1
 }
 
-async function closeBet(commit, callback) {
+async function closeBetWithAddress(commit, pk, from, callback) {
   const reveal = await getAsync(commit)
-  const pk = conf.pk
-  const from = conf.address
   const gasPrice = await web3.eth.getGasPrice()
   let nonce = await getNonce(from)
   const nonceOnline = await web3.eth.getTransactionCount(from)
 
   if (nonce < 0 || (nonce != 0 && !nonce) || nonce < nonceOnline) {
-    console.log('redis nonce is not correct, sync nonce online')
+    console.log('redis nonce is not correct, sync nonce online', nonce, onceOnline)
     nonce = nonceOnline
   }
   var privateKey = new Buffer(pk, 'hex')
@@ -60,9 +58,16 @@ async function closeBet(commit, callback) {
   return web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), callback)
 }
 
+async function closeBet(commit, callback) {
+  const pk = conf.pk
+  const from = conf.address
+  return closeBetWithAddress(commit, pk, from, callback)
+}
+
 syncNonce(conf.address)
 //closeBet('0x36c3b7aa855b06e4c0d38c31b88edb823ca0af6dcc555cc208404e11877653c8', console.log)
 //closeBet('0x' + 'bfbca8ab55b013bea34cb7ed0436b4069d90b00d271eee0d6b627514e0c117df', console.log)
 module.exports = {
-    closeBet: closeBet 
+    closeBet: closeBet,
+    closeBetWithAddress: closeBetWithAddress
 }
