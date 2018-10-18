@@ -3,6 +3,7 @@ const router = express.Router()
 const Account = require('eth-lib/lib/account')
 const conf = require('../config/config.js')
 const redisPool = require('../redisPool')
+const perRedisPool = require('../perRedisPool')
 const redisUtils = require('../redisUtils')
 const web3 = conf.getWeb3();
 
@@ -73,6 +74,7 @@ router.get('/random', function(req, res, next) {
     const reveal = web3.utils.randomHex(32)
     const commit = web3.utils.soliditySha3(reveal)
     redisPool.setex(commit, 3750, reveal)
+    perRedisPool.set(commit, reveal)
     const expiredBlockNumber = 8000000
     signData = getSignature(expiredBlockNumber, commit, conf.pk)
     data = {}
