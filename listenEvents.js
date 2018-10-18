@@ -33,7 +33,7 @@ setInterval(() => web3.eth.getBlockNumber()
       console.log(new Date() + ' set interval error: ', err)
       web3.setProvider(getProvider())
       startListen()
-    }), 1000*30*60)
+    }), 1000*5*60)
 
 function listenbetClosed() {
   console.log('start listening close bet transaction')
@@ -52,7 +52,7 @@ function listenbetClosed() {
         redisUtils.updateLastWinner(address, winAmount)
         const url = 'http://' + conf.inetAddr + ':' + conf.inetPort +  '/v1/api/dataUpdate'
         const type = 'closeBetUpdateData'
-        pushUpdate(url, type)
+        utils.pushUpdate(url, type)
       }
     }
   })
@@ -68,18 +68,19 @@ function listenPlaceBet() {
     if (error) {
       console.error(new Date().toLocateString(), ' listen place bet transaction error: ' + JSON.stringify(error));
     } else {
-      console.log('listen place bet data[' + new Date().toLocaleString() + ']:', result.transactionHash)
       const data = result.data
       const modulo = parseInt(result.topics[2])
       const choice = parseInt(data.slice(0, 66))
       const value = parseInt('0x' + data.slice(66, 130))
       const commit = '0x' + data.slice(130,194)
       const blockHash = result.blockHash
+      const txhash = result.transactionHash
+      console.log('listen place bet data[' + new Date().toLocaleString() + ']:', txhash, commit)
 
       // update relate data
       redisUtils.placeBetUpdate(value, modulo)
       const dataUpdateUrl = 'http://' + conf.inetAddr + ':' + conf.inetPort +  '/v1/api/dataUpdate'
-      pushUpdate(dataUpdateUrl, 'dataUpdate')
+      utils.pushUpdate(dataUpdateUrl, 'dataUpdate')
 
 
       const ttl = 1000
@@ -89,21 +90,23 @@ function listenPlaceBet() {
             return
           }
           const result = utils.getResult(reply, blockHash, modulo)
+          console.log('calculate result: txhash, reveal, blockHash, modulo, result', txhash, reply, blockHash, modulo, result)
+          const commitRevealUrl = 'http://' + conf.inetAddr + ':' + conf.inetPort +  '/v1/api/betClosed?commit=' + commit + '&result=' + result + '&modulo=' + modulo
+          utils.pushUpdate(commitRevealUrl, 'commit-reveal')
           manage.closeBet(commit, function(err, hash) {
             if (err) {
-              console.log('[' + new Date().toLocaleString() + ']:' + 'close bet error occur, has return: ', err)
+              console.log('[' + new Date().toLocaleString() + ']:' + 'close bet error occur, has return: ', err, commit)
+              redisPool.sadd('MISSING_COMMITS', commit)
               return
             }
+            console.log('close bet, place txhash and commit: ', txhash, commit, modulo, choice, result)
             redisPool.incr('NONCE:' + conf.debug + ':' + conf.address, function(err, reply) {
               console.log('incr nonce ', err, reply, hash)
               redisPool.del(commit)
-
-              const commitRevealUrl = 'http://' + conf.inetAddr + ':' + conf.inetPort +  '/v1/api/betClosed?commit=' + commit + '&result=' + result + '&modulo=' + modulo
-              pushUpdate(commitRevealUrl, 'commit-reveal')
-              console.log(modulo, choice, result)
             })
           }).catch(error => {
-            console.log('[' + new Date().toLocaleString() + ']:' + 'close bet error occur: ', error)
+            console.log('[' + new Date().toLocaleString() + ']:' + 'close bet error occur: ', error, commit)
+            redisPool.sadd('MISSING_COMMITS', commit)
           })
         })
         return lock.unlock(error => {
@@ -114,16 +117,6 @@ function listenPlaceBet() {
       })
     }
   })
-}
-
-function pushUpdate(url, logText) {
-  axios.get(url)
-    .then(function (response) {
-      console.log('push ' + logText + ' to client');
-    })
-    .catch(function (error) {
-      console.log(logText + '[' + new Date().toLocaleString() + ']:', error);
-    })
 }
 
 function startListen() {
