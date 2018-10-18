@@ -100,5 +100,6 @@ module.exports = {
   getData: getData,
   incr: incr,
   placeBetUpdate: placeBetUpdate,
-  updateLastWinner: updateLastWinner
+  updateLastWinner: updateLastWinner,
+  getAsync: getAsync
 }
