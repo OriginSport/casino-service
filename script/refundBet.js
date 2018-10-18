@@ -5,16 +5,17 @@ const casinoAbi = require('../config/abis.js').casinoAbi
 const casinoAddr = property.contractAddress
 const contract = new web3.eth.Contract(casinoAbi, casinoAddr)
 
-const ownerPk = property.pk
-const owner = property.from
+const croupierPk = property.croupierPk
+const croupier = property.croupier
+const fromBlock = property.fromBlock
 let nonce = 0
 
 async function autoRefundBet() {
   const events = getEvents(casinoAbi)
-  const fromBlock = property.fromBlock
   const expirationBlocks = 250
   const logParticipant = events.LogParticipant
   const blockNumber = await web3.eth.getBlockNumber()
+  console.log('blockNumber', blockNumber)
   web3.eth.getPastLogs({fromBlock: fromBlock, address: casinoAddr, topics: [logParticipant.signature]})
     .then(logs => {
       for (const log of logs) {
@@ -31,9 +32,9 @@ async function autoRefundBet() {
                 if (blockNumber > placeBlockNumber + expirationBlocks) {
                   const data = contract.methods.refundBet(commit).encodeABI()
                   // make nonce correctly in async function
-                  const currNonce = await web3.eth.getTransactionCount(owner)
+                  const currNonce = await web3.eth.getTransactionCount(croupier)
                   nonce = nonce > currNonce ? nonce : currNonce
-                  await sendSignedTxHelper(casinoAddr, data, null, ownerPk, nonce++)
+                  await sendSignedTxHelper(casinoAddr, data, null, croupierPk, nonce++)
                 }
               }
             }
